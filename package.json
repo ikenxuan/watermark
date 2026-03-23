@@ -29,7 +29,7 @@
     "npm"
   ],
   "scripts": {
-    "artifacts": "napi artifacts",
+    "artifacts": "napi artifacts --output-dir artifacts",
     "build": "napi build --platform --release --esm --output-dir dist",
     "build:debug": "napi build --platform --esm --output-dir dist",
     "create-npm-dirs": "napi create-npm-dirs",

@@ -52,15 +52,19 @@ jobs:
         with:
           targets: ${{ matrix.target }}
           
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
       - uses: actions/setup-node@v4
         with:
           node-version: 24
           
       - name: Install dependencies
-        run: npm install
+        run: pnpm install
         
       - name: Build
-        run: npm run build
+        run: pnpm run build
         
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -101,13 +105,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
       - uses: actions/setup-node@v4
         with:
           node-version: 24
           registry-url: 'https://registry.npmjs.org'
           
       - name: Install dependencies
-        run: npm install
+        run: pnpm install
         
       - name: Download JS bindings
         uses: actions/download-artifact@v4
@@ -118,25 +126,25 @@ jobs:
       - name: Download Node bindings
         uses: actions/download-artifact@v4
         with:
-          path: .
+          path: artifacts
           pattern: node-bindings-*
           merge-multiple: true
 
       - name: Setup NPM Dirs
         run: |
-          npm run create-npm-dirs
-          npm run artifacts
+          pnpm run create-npm-dirs
+          pnpm run artifacts
 
       - name: Prepare Root Package and Publish Sub-packages
-        run: npm run prepublishOnly
+        run: pnpm run prepublishOnly
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Remove scripts field
-        run: npm pkg delete scripts devDependencies
+        run: pnpm pkg delete scripts devDependencies
 
       - name: Publish to NPM
-        run: npm publish --access public --provenance --ignore-scripts
+        run: pnpm publish --access public --no-git-checks --ignore-scripts
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
