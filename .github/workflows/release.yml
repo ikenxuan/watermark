@@ -135,6 +135,11 @@ jobs:
           pnpm run create-npm-dirs
           pnpm run artifacts
 
+      - name: Clean up temporary files before publish
+        run: |
+          rm -rf artifacts
+          rm -rf dist/*.node
+
       - name: Prepare Root Package and Publish Sub-packages
         run: pnpm run prepublishOnly
         env:
