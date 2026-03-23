@@ -14,6 +14,7 @@ winio = { version = "0.11.0", default-features = false, features = ["winui"] }
 winui3 = { version = "0.3.8", package = "winio-winui3", features = ["UI_Xaml", "UI_Xaml_Controls", "UI_Xaml_Input", "UI_Xaml_Markup", "UI_Xaml_Media"] }
 
 [dependencies]
+rayon = "1.10.0"
 md5 = "0.8.0"
 log = "0.4"
 env_logger = "0.11"
@@ -33,3 +34,9 @@ required-features = ["gui"]
 
 [features]
 gui = []
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"

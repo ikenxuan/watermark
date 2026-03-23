@@ -1,12 +1,14 @@
 use md5;
 use log::debug;
+#[cfg(not(target_arch = "wasm32"))]
+use rayon::prelude::*;
 
 const WATERMARK_MAGIC: [u8; 4] = *b"KWM1";
 const WATERMARK_V2_MAGIC: [u8; 4] = *b"KWM2";
-const MAX_WATERMARK_TEXT_BYTES: usize = 100;
+const MAX_WATERMARK_TEXT_BYTES: usize = 350;
 const MAX_WATERMARK_TEXT_BYTES_V1: usize = 48;
 const WATERMARK_CHECKSUM_BYTES: usize = 8;
-const WATERMARK_PAYLOAD_BYTES: usize = 120;
+const WATERMARK_PAYLOAD_BYTES: usize = 370;
 const WATERMARK_PAYLOAD_BYTES_V1: usize = 64;
 const WATERMARK_PAYLOAD_BITS: usize = WATERMARK_PAYLOAD_BYTES * 8;
 const WATERMARK_PAYLOAD_BITS_V1: usize = WATERMARK_PAYLOAD_BYTES_V1 * 8;
@@ -211,6 +213,39 @@ fn evaluate_payload_candidates(
     )
 }
 
+#[cfg(not(target_arch = "wasm32"))]
+fn collect_bits_by_step(
+    bytes: &[u8],
+    width: usize,
+    height: usize,
+    block_size: usize,
+    step: usize,
+) -> Vec<u8> {
+    let y_steps: Vec<usize> = (0..height - block_size).step_by(step).collect();
+    let x_steps: Vec<usize> = (0..width - block_size).step_by(step).collect();
+
+    y_steps.par_iter().flat_map(|&y| {
+        let mut row_bits = Vec::with_capacity(x_steps.len());
+        for &x in &x_steps {
+            let mut block = [[0.0; 8]; 8];
+            for (i, row) in block.iter_mut().enumerate() {
+                for (j, value) in row.iter_mut().enumerate() {
+                    let idx = ((y + i) * width + (x + j)) * 4;
+                    let r = bytes[idx] as f64;
+                    let g = bytes[idx + 1] as f64;
+                    let b = bytes[idx + 2] as f64;
+                    let (y_val, _, _) = rgb_to_ycbcr(r as u8, g as u8, b as u8);
+                    *value = y_val;
+                }
+            }
+            let dwt_block = dwt2_haar_8x8(&block);
+            row_bits.push(extract_bit_from_dwt_block(&dwt_block));
+        }
+        row_bits
+    }).collect()
+}
+
+#[cfg(target_arch = "wasm32")]
 fn collect_bits_by_step(
     bytes: &[u8],
     width: usize,
@@ -355,7 +390,7 @@ fn robust_embed(
     watermark_text: &str,
 ) -> Option<Vec<u8>> {
     const BLOCK_SIZE: usize = 8;
-    const STEP_CANDIDATES: [usize; 4] = [8, 6, 4, 2];
+    const STEP_CANDIDATES: [usize; 7] = [8, 6, 4, 3, 2, 1, 1]; // Fallback to 1
     const STRENGTH: f64 = 5.4;
 
     if width <= BLOCK_SIZE || height <= BLOCK_SIZE {
@@ -488,7 +523,7 @@ fn robust_extract(
     height: usize,
 ) -> Option<String> {
     const BLOCK_SIZE: usize = 8;
-    const STEPS: [usize; 5] = [12, 8, 6, 4, 2];
+    const STEPS: [usize; 7] = [12, 8, 6, 4, 3, 2, 1];
 
     if width <= BLOCK_SIZE || height <= BLOCK_SIZE {
         return None;
@@ -542,16 +577,7 @@ fn robust_extract(
 
     #[cfg(not(target_arch = "wasm32"))]
     {
-        let step_results = std::thread::scope(|scope| {
-            let mut handles = Vec::new();
-            for step in STEPS {
-                handles.push(scope.spawn(move || evaluate_step(step)));
-            }
-            handles
-                .into_iter()
-                .map(|handle| handle.join().unwrap_or((None, 0.0, None, 0.0)))
-                .collect::<Vec<(Option<String>, f64, Option<String>, f64)>>()
-        });
+        let step_results: Vec<_> = STEPS.into_par_iter().map(|step| evaluate_step(step)).collect();
         for (step_verified_candidate, step_verified_score, step_fallback_candidate, step_fallback_score) in step_results {
             if step_verified_score > best_verified_score {
                 best_verified_score = step_verified_score;

@@ -34,7 +34,6 @@ fn main() -> Result<()> {
 
 struct MainModel {
     window: Child<Window>,
-    title_label: Child<Label>,
     upload_button: Child<Button>,
     remove_button: Child<Button>,
     reparse_button: Child<Button>,
@@ -63,11 +62,8 @@ impl Component for MainModel {
     async fn init(_init: Self::Init<'_>, _sender: &ComponentSender<Self>) -> Result<Self> {
         init! {
             window: Window = (()) => {
-                text: "dwt 盲水印解密",
+                text: "DWT 盲水印解密工具",
                 size: Size::new(900.0, 600.0),
-            },
-            title_label: Label = (&window) => {
-                text: "dwt 盲水印解密工具",
             },
             upload_button: Button = (&window) => {
                 text: "点击上传图片",
@@ -91,13 +87,11 @@ impl Component for MainModel {
         let _ = apply_glyph_icon_to_button(&upload_button, "E8B5", "点击选择或上传图片");
         let _ = apply_compact_glyph_button(&remove_button, "E74D", "删除图片");
         let _ = apply_compact_glyph_button(&reparse_button, "E72C", "重新解析");
-        let _ = apply_label_font_size(&title_label, 26.0);
         let _ = apply_label_font_size(&result_title, 18.0);
         let _ = apply_textbox_font_size(&result_text, 13.0);
 
         Ok(Self {
             window,
-            title_label,
             upload_button,
             remove_button,
             reparse_button,
@@ -129,7 +123,6 @@ impl Component for MainModel {
     async fn update_children(&mut self) -> Result<bool> {
         update_children!(
             self.window,
-            self.title_label,
             self.upload_button,
             self.remove_button,
             self.reparse_button,
@@ -214,9 +207,7 @@ impl Component for MainModel {
         let margin = 24.0;
         
         let title_height = 40.0;
-        self.title_label.set_loc(Point::new(margin, margin))?;
-        self.title_label.set_size(Size::new(width - margin * 2.0, title_height))?;
-
+        
         let content_y = margin + title_height + 16.0;
         let content_height = height - content_y - margin;
         
@@ -472,23 +463,20 @@ fn render_watermark_text(extracted_text: &str) -> String {
     let Ok(value) = serde_json::from_str::<Value>(json_text) else {
         return extracted_text.to_string();
     };
-    let timestamp = value.get("ts").and_then(Value::as_i64).unwrap_or(0);
+    let timestamp = value.get("a").and_then(Value::as_i64).unwrap_or(0);
     let formatted_timestamp = format_timestamp(timestamp);
-    let plugin_version = value.get("pv").and_then(Value::as_str).unwrap_or("未知");
+    let plugin_version = value.get("b").and_then(Value::as_str).unwrap_or("未知");
     let account = value
-        .get("account")
-        .or_else(|| value.get("user_id"))
+        .get("c")
         .and_then(|it| it.as_str().map(ToOwned::to_owned).or_else(|| it.as_i64().map(|num| num.to_string())))
         .unwrap_or_else(|| "未知".to_string());
-    let emphasized_timestamp = emphasize_value(&formatted_timestamp);
-    let emphasized_plugin_version = emphasize_value(plugin_version);
-    let emphasized_account = emphasize_value(&account);
+    
     format!(
-        "【原始水印】\n{}\n\n【解析结果】\n  时间戳：{}\n  插件版本：{}\n  账号：{}",
+        "【原始水印】\n{}\n\n【解析结果】\n  时间戳：{}\n  详细信息：{}\n  账号：{}",
         extracted_text,
-        emphasized_timestamp,
-        emphasized_plugin_version,
-        emphasized_account
+        formatted_timestamp,
+        plugin_version,
+        account
     )
 }
 
