@@ -3,7 +3,7 @@
 use std::path::PathBuf;
 use std::{ffi::OsString, os::windows::ffi::OsStringExt};
 
-use dct_watermark::algorithm::dct_extract_from_rgba;
+use dwt_watermark::algorithm::dwt_extract_from_rgba;
 use chrono::{Local, TimeZone};
 use serde_json::Value;
 use winio::prelude::*;
@@ -29,7 +29,7 @@ type Result<T> = std::result::Result<T, winio::Error>;
 
 fn main() -> Result<()> {
     init_logger();
-    App::new("com.dctwatermark.winui3")?.run_until_event::<MainModel>(())
+    App::new("com.dwtwatermark.winui3")?.run_until_event::<MainModel>(())
 }
 
 struct MainModel {
@@ -63,11 +63,11 @@ impl Component for MainModel {
     async fn init(_init: Self::Init<'_>, _sender: &ComponentSender<Self>) -> Result<Self> {
         init! {
             window: Window = (()) => {
-                text: "DCT 盲水印解密",
+                text: "dwt 盲水印解密",
                 size: Size::new(900.0, 600.0),
             },
             title_label: Label = (&window) => {
-                text: "DCT 盲水印解密工具",
+                text: "dwt 盲水印解密工具",
             },
             upload_button: Button = (&window) => {
                 text: "点击上传图片",
@@ -412,7 +412,7 @@ async fn process_image(
     if let Some(path_str) = path.to_str() {
         let _ = apply_image_to_button(upload_button, path_str);
         result_text.set_text("正在解密...")?;
-        let extracted = dct_extract(path_str).await;
+        let extracted = dwt_extract(path_str).await;
         if let Some(text) = extracted {
             let display_text = render_watermark_text(&text);
             result_text.set_text(display_text)?;
@@ -451,9 +451,9 @@ async fn decode_image(path: &str) -> Option<(Vec<u8>, usize, usize)> {
     Some((bytes, width, height))
 }
 
-async fn dct_extract(img_path: &str) -> Option<String> {
+async fn dwt_extract(img_path: &str) -> Option<String> {
     let (bytes, width, height) = decode_image(img_path).await?;
-    dct_extract_from_rgba(&bytes, width, height)
+    dwt_extract_from_rgba(&bytes, width, height)
 }
 
 fn render_watermark_text(extracted_text: &str) -> String {

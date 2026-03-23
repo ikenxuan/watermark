@@ -11,7 +11,7 @@ pub fn extract_watermark_from_png_bytes(png_bytes: Buffer) -> Result<String> {
     let rgba = image.to_rgba8();
     let width = rgba.width() as usize;
     let height = rgba.height() as usize;
-    let extracted = algorithm::dct_extract_from_rgba(rgba.as_raw(), width, height)
+    let extracted = algorithm::dwt_extract_from_rgba(rgba.as_raw(), width, height)
         .unwrap_or_else(|| "未检测到文本或解析失败".to_string());
     Ok(extracted)
 }
@@ -26,7 +26,7 @@ pub fn embed_watermark_to_png_bytes(
     let rgba = image.to_rgba8();
     let width = rgba.width() as usize;
     let height = rgba.height() as usize;
-    let embedded = algorithm::dct_embed_to_rgba(rgba.as_raw(), width, height, &watermark_text)
+    let embedded = algorithm::dwt_embed_to_rgba(rgba.as_raw(), width, height, &watermark_text)
         .ok_or_else(|| Error::from_reason("Embed failed"))?;
 
     let mut out = Vec::new();

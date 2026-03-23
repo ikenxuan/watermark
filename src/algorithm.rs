@@ -347,7 +347,7 @@ fn ycbcr_to_rgb(y: f64, cb: f64, cr: f64) -> (u8, u8, u8) {
     (r as u8, g as u8, b as u8)
 }
 
-/// 增强版 DCT 嵌入：水印重复嵌入，只用一轮（避免多轮同步问题）
+/// 增强版 dwt 嵌入：水印重复嵌入，只用一轮（避免多轮同步问题）
 fn robust_embed(
     bytes: &[u8],
     width: usize,
@@ -607,7 +607,7 @@ pub fn get_watermark_byte_count(text: &str) -> usize {
     WATERMARK_PAYLOAD_BYTES
 }
 
-pub fn dct_embed_to_rgba(
+pub fn dwt_embed_to_rgba(
     bytes: &[u8],
     width: usize,
     height: usize,
@@ -616,7 +616,7 @@ pub fn dct_embed_to_rgba(
     robust_embed(bytes, width, height, watermark_text)
 }
 
-pub fn dct_embed_to_bgra(
+pub fn dwt_embed_to_bgra(
     bytes: &[u8],
     width: usize,
     height: usize,
@@ -625,10 +625,10 @@ pub fn dct_embed_to_bgra(
     robust_embed(bytes, width, height, watermark_text)
 }
 
-pub fn dct_extract_from_rgba(bytes: &[u8], width: usize, height: usize) -> Option<String> {
+pub fn dwt_extract_from_rgba(bytes: &[u8], width: usize, height: usize) -> Option<String> {
     robust_extract(bytes, width, height)
 }
 
-pub fn dct_extract_from_bgra(bytes: &[u8], width: usize, height: usize) -> Option<String> {
+pub fn dwt_extract_from_bgra(bytes: &[u8], width: usize, height: usize) -> Option<String> {
     robust_extract(bytes, width, height)
 }

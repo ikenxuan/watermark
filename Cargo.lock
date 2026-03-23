@@ -379,26 +379,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "dct_watermark"
-version = "0.1.0"
-dependencies = [
- "chrono",
- "env_logger",
- "image",
- "log",
- "md5",
- "napi",
- "napi-build",
- "napi-derive",
- "rfd",
- "serde_json",
- "windows",
- "windows-core",
- "winio",
- "winio-winui3",
-]
-
-[[package]]
 name = "dispatch2"
 version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -439,6 +419,26 @@ name = "dtor-proc-macro"
 version = "0.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f678cf4a922c215c63e0de95eb1ff08a958a81d47e485cf9da1e27bf6305cfa5"
+
+[[package]]
+name = "dwt_watermark"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "env_logger",
+ "image",
+ "log",
+ "md5",
+ "napi",
+ "napi-build",
+ "napi-derive",
+ "rfd",
+ "serde_json",
+ "windows",
+ "windows-core",
+ "winio",
+ "winio-winui3",
+]
 
 [[package]]
 name = "embed-resource"

@@ -9,7 +9,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "napi": {
-    "binaryName": "dct_watermark",
+    "binaryName": "dwt_watermark",
     "targets": [
       "x86_64-pc-windows-msvc",
       "aarch64-apple-darwin",
@@ -33,7 +33,7 @@
     "build": "napi build --platform --release --esm --output-dir dist",
     "build:debug": "napi build --platform --esm --output-dir dist",
     "create-npm-dirs": "napi create-npm-dirs",
-    "gui": "cargo build --release --bin dct_watermark --features gui",
+    "gui": "cargo build --release --bin dwt_watermark --features gui",
     "prepublishOnly": "napi prepublish --no-gh-release"
   },
   "devDependencies": {

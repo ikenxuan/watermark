@@ -84,13 +84,13 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         
       - name: Build GUI
-        run: cargo build --release --bin dct_watermark --features gui
+        run: cargo build --release --bin dwt_watermark --features gui
         
       - name: Upload GUI artifact
         uses: actions/upload-artifact@v4
         with:
           name: gui-exe
-          path: target/release/dct_watermark.exe
+          path: target/release/dwt_watermark.exe
 
   publish:
     needs: [release-please, build-node-bindings, build-gui]
@@ -149,5 +149,5 @@ jobs:
         with:
           tag_name: ${{ needs.release-please.outputs.tag_name }}
           files: |
-            gui/dct_watermark.exe
+            gui/dwt_watermark.exe
           fail_on_unmatched_files: true

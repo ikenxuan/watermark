@@ -1,5 +1,5 @@
 [package]
-name = "dct_watermark"
+name = "dwt_watermark"
 version = "0.1.0"
 edition = "2024"
 
@@ -27,7 +27,7 @@ serde_json = "1.0.145"
 napi-build = "2.1.4"
 
 [[bin]]
-name = "dct_watermark"
+name = "dwt_watermark"
 path = "src/main.rs"
 required-features = ["gui"]
 
