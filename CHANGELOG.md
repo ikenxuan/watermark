@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/ikenxuan/watermark/compare/v1.0.0...v1.0.1) (2026-03-23)
+
+
+### Bug Fixes
+
+* 114514 ([50ca2d8](https://github.com/ikenxuan/watermark/commit/50ca2d89bb9759cd60b4916db5ca5fa124225d5d))
+
 ## 1.0.0 (2026-03-23)
 
 
