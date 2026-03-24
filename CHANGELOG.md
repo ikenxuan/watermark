@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.6](https://github.com/ikenxuan/watermark/compare/v1.0.5...v1.0.6) (2026-03-24)
+
+
+### Bug Fixes
+
+* compress ([f9dbff0](https://github.com/ikenxuan/watermark/commit/f9dbff0c95d2e87bebb2e1cb8d60cc2fc1a344a9))
+
 ## [1.0.5](https://github.com/ikenxuan/watermark/compare/v1.0.4...v1.0.5) (2026-03-23)
 
 
