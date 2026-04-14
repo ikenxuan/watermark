@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.7](https://github.com/ikenxuan/watermark/compare/v1.0.6...v1.0.7) (2026-04-14)
+
+
+### 🔧 其他更新
+
+* 添加NPM库构建工作流并优化算法实现 ([242dee2](https://github.com/ikenxuan/watermark/commit/242dee22c8ac0c96f9edaa58f1bfc1c66b0d6ea1))
+
 ## [1.0.6](https://github.com/ikenxuan/watermark/compare/v1.0.5...v1.0.6) (2026-03-24)
 
 
