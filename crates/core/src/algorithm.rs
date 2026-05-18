@@ -117,19 +117,19 @@ fn parse_watermark_payload(payload: &[u8]) -> Option<(String, bool)> {
         .trim_matches(char::from(0))
         .trim()
         .to_string();
-    
+
     if text.is_empty() {
         return None;
     }
     let checksum_start = WATERMARK_TEXT_OFFSET + MAX_WATERMARK_TEXT_BYTES;
-    
+
     // 如果长度没坏，我们尽量去验证它
     let expected = if text_len > 0 && text_len <= MAX_WATERMARK_TEXT_BYTES {
         compute_checksum_prefix_bytes(&payload[WATERMARK_TEXT_OFFSET..WATERMARK_TEXT_OFFSET + text_len])
     } else {
         [0u8; WATERMARK_CHECKSUM_BYTES]
     };
-    
+
     let mut actual = [0u8; WATERMARK_CHECKSUM_BYTES];
     actual.copy_from_slice(&payload[checksum_start..checksum_start + WATERMARK_CHECKSUM_BYTES]);
     Some((text, actual == expected))
@@ -143,13 +143,13 @@ fn parse_watermark_payload_v1(payload: &[u8]) -> Option<(String, bool)> {
         return None;
     }
     let text_len = payload[4] as usize;
-    
+
     let full_text_bytes = &payload[5..5 + MAX_WATERMARK_TEXT_BYTES_V1];
     let text = String::from_utf8_lossy(full_text_bytes)
         .trim_matches(char::from(0))
         .trim()
         .to_string();
-    
+
     if text.is_empty() {
         return None;
     }
@@ -181,12 +181,12 @@ fn evaluate_payload_candidates(
     for phase in 0..payload_bits {
         let remaining = total_bits_len.saturating_sub(phase);
         let copies = remaining / payload_bits;
-        
+
         // 允许只抄写了一遍（或甚至不到一遍的尝试拼接）
         if copies < 1 && remaining < payload_bits / 2 {
             break; // 只有当连半遍都不到时才放弃
         }
-        
+
         let effective_copies = if copies == 0 { 1 } else { copies };
 
         let mut merged_bits = vec![0u8; payload_bits];
@@ -198,7 +198,7 @@ fn evaluate_payload_candidates(
             } else {
                 effective_copies.saturating_sub(1)
             };
-            
+
             if actual_copies == 0 {
                 // 如果这个位连一次都没抄到，只能蒙一个0
                 *merged_bit = 0;
@@ -223,7 +223,7 @@ fn evaluate_payload_candidates(
         if payload.len() != payload_bytes {
             continue;
         }
-        
+
         // --- ADDED DEBUGGING FOR MAGIC NUMBER ---
         if phase == 0 && payload_bytes == WATERMARK_PAYLOAD_BYTES {
             let magic = &payload[0..4];
@@ -237,8 +237,8 @@ fn evaluate_payload_candidates(
             let text_quality = text_quality_score(&text);
             let copy_score = (copies as f64 / 12.0).min(1.0);
             let fallback_score = text_quality * 0.3 + consistency * 0.45 + copy_score * 0.25;
-            
-            debug!("[DWT Extract] Parsed candidate: text_len={}, verified={}, text_quality={:.3}, consistency={:.3}, copies={}, fallback_score={:.3}, text='{}'", 
+
+            debug!("[DWT Extract] Parsed candidate: text_len={}, verified={}, text_quality={:.3}, consistency={:.3}, copies={}, fallback_score={:.3}, text='{}'",
                 text.len(), verified, text_quality, consistency, copies, fallback_score, text.chars().take(20).collect::<String>());
 
             if fallback_score > best_fallback_score {
@@ -486,7 +486,7 @@ fn robust_embed(
             step = candidate;
         }
     }
-    
+
     // 如果最高密度（step=1）都写不下一遍，那就直接用最高密度硬写
     if total_blocks < payload_bit_count {
         step = 1;
@@ -596,7 +596,7 @@ fn robust_extract(
         if bits.is_empty() {
             return (None, 0.0, None, 0.0);
         }
-        
+
         // --- ADDED DEBUGGING FOR BITS EXTRACTION ---
         debug!("[DWT Extract] step={}, total_bits_extracted={}", step, bits.len());
 
@@ -646,7 +646,7 @@ fn robust_extract(
         // 按顺序评估，如果发现非常确定的水印（verified），就立刻停止，极大节省大图时间
         for &step in &STEPS {
             let (step_verified_candidate, step_verified_score, step_fallback_candidate, step_fallback_score) = evaluate_step(step);
-            
+
             if step_verified_score > best_verified_score {
                 best_verified_score = step_verified_score;
                 best_verified_candidate = step_verified_candidate;
@@ -655,7 +655,7 @@ fn robust_extract(
                 best_fallback_score = step_fallback_score;
                 best_fallback_candidate = step_fallback_candidate;
             }
-            
+
             // 如果分数极高（比如验证通过且分数 >= 0.8），直接提前结束，不浪费时间算更小的 step
             if best_verified_score >= 0.8 {
                 debug!("[DWT] Early exit at step {} with high verified score: {:.3}", step, best_verified_score);
