@@ -93,6 +93,12 @@ jobs:
           path: artifacts
           pattern: native-*
 
+      - name: Copy glue code to dist
+        run: |
+          mkdir -p dist
+          cp artifacts/native-x86_64-unknown-linux-gnu/index.js dist/
+          cp artifacts/native-x86_64-unknown-linux-gnu/index.d.ts dist/
+
       - name: Setup npm dirs and sync versions
         run: |
           pnpm create-npm-dirs
