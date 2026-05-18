@@ -1,0 +1,130 @@
+name: Publish Preview
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+    tags:
+      - "!**"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-native:
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - runner: windows-latest
+            target: x86_64-pc-windows-msvc
+            label: windows-x86_64
+          - runner: macos-latest
+            target: aarch64-apple-darwin
+            label: macos-aarch64
+          - runner: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            label: linux-x86_64
+    runs-on: ${{ matrix.platform.runner }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: latest
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build native binary
+        run: pnpm napi:build
+
+      - name: Upload native binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-${{ matrix.platform.target }}
+          path: dist/*.node
+
+  publish-preview:
+    needs: build-native
+    runs-on: ubuntu-latest
+    outputs:
+      sha: ${{ steps.publish.outputs.sha }}
+      urls: ${{ steps.publish.outputs.urls }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: latest
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Download all native binaries
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          pattern: native-*
+
+      - name: Setup npm dirs and sync versions
+        run: |
+          pnpm create-npm-dirs
+          node scripts/sync-npm-dirs.cjs
+
+      - name: Publish to pkg.pr.new
+        id: publish
+        run: pnpm exec pkg-pr-new publish --comment=off '.' './npm/*'
+
+      - name: Generate install command
+        id: gen-cmd
+        run: |
+          MAIN_URL=$(echo "${{ steps.publish.outputs.urls }}" | tr ' ' '\n' | grep '@ikenxuan/watermark@' | head -n1)
+          echo "main_url=$MAIN_URL" >> "$GITHUB_OUTPUT"
+
+      - name: Post PR comment
+        if: github.event_name == 'pull_request'
+        uses: thollander/actions-comment-pull-request@v3
+        with:
+          message: |
+            ## 📦 预览包发布成功
+
+            ### 🏷️ 包信息
+            - **主包:** `@ikenxuan/watermark`
+            - **提交:** [`${{ steps.publish.outputs.sha }}`](https://github.com/${{ github.repository }}/tree/${{ github.sha }})
+
+            ### 📥 安装命令
+            ```bash
+            npm i ${{ steps.gen-cmd.outputs.main_url }}
+            ```
+
+            ### 📦 可选依赖包
+            ```bash
+            npm i ${{ steps.publish.outputs.urls }}
+            ```
+          comment-tag: published-packages
+          mode: upsert
+          reactions: rocket

@@ -3,6 +3,8 @@ export interface ImageResult {
   dataUrl: string;
   durationMs: number;
   filename: string;
+  wmSize: number;
+  mimeType: string;
 }
 
 export interface TextResult {

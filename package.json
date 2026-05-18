@@ -9,7 +9,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "napi": {
-    "binaryName": "dwt_watermark",
+    "binaryName": "watermark",
     "targets": [
       "x86_64-pc-windows-msvc",
       "aarch64-apple-darwin",
@@ -59,9 +59,16 @@
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.2",
+    "pkg-pr-new": "^0.0.74",
     "tailwindcss": "^4.3.0",
     "typescript": "^5.9.3",
     "vite": "^8.0.13"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "optionalDependencies": {
+    "@ikenxuan/watermark-darwin-arm64": "1.0.11",
+    "@ikenxuan/watermark-linux-arm64-gnu": "1.0.11",
+    "@ikenxuan/watermark-linux-x64-gnu": "1.0.11",
+    "@ikenxuan/watermark-win32-x64-msvc": "1.0.11"
+  }
 }

@@ -13,7 +13,7 @@ interface ImageSectionProps {
   onClear: () => void;
 }
 
-export default function ImageSection({ file, previewUrl, fileInfo, onFileSelect, onClear }: ImageSectionProps) {
+export default function ImageSection({ file: _file, previewUrl, fileInfo, onFileSelect, onClear }: ImageSectionProps) {
   const infoRef = useRef<HTMLDivElement>(null);
 
   const handleImageSelect = useCallback(
@@ -38,7 +38,7 @@ export default function ImageSection({ file, previewUrl, fileInfo, onFileSelect,
           <img src={previewUrl} alt="预览" className="h-20 w-full object-contain" draggable={false} />
           <Button
             size="sm"
-            variant="flat"
+            variant="secondary"
             className="absolute right-1.5 top-1.5 flex h-6 w-6 min-w-0 items-center justify-center rounded p-0"
             style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--foreground)" }}
             onPress={onClear}

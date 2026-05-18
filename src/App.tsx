@@ -15,6 +15,7 @@ export default function App() {
   const [previewUrl, setPreviewUrl] = useState("");
   const [fileInfo, setFileInfo] = useState<ImageFileInfo | null>(null);
   const [result, setResult] = useState<ResultData | null>(null);
+  const [wmSize, setWmSize] = useState(0);
 
   const canvasRef = useRef<HTMLDivElement>(null);
   const embedRef = useRef<HTMLDivElement>(null);
@@ -54,10 +55,14 @@ export default function App() {
     setPreviewUrl("");
     setFileInfo(null);
     setResult(null);
+    setWmSize(0);
   }, []);
 
   const handleResult = useCallback((newResult: ResultData) => {
     setResult(newResult);
+    if (newResult.type === "image") {
+      setWmSize(newResult.wmSize);
+    }
 
     if (canvasRef.current) {
       gsap.fromTo(
@@ -137,7 +142,7 @@ export default function App() {
             <Layers size={12} strokeWidth={2.5} />
           </div>
           <div className="flex items-baseline gap-2">
-            <h1 className="text-[13px] font-semibold tracking-tight">DWT Watermark</h1>
+            <h1 className="text-[13px] font-semibold tracking-tight">Watermark Tool</h1>
             <span className="text-[10px]" style={{ color: "var(--muted)" }}>
               数字水印工具
             </span>
@@ -211,6 +216,7 @@ export default function App() {
                 <ExtractControls
                   file={file}
                   result={result}
+                  wmSize={wmSize}
                   onResult={handleResult}
                 />
               </div>

@@ -60,6 +60,9 @@ importers:
       '@vitejs/plugin-react':
         specifier: ^6.0.2
         version: 6.0.2(vite@8.0.13(jiti@2.7.0))
+      pkg-pr-new:
+        specifier: ^0.0.74
+        version: 0.0.74
       tailwindcss:
         specifier: ^4.3.0
         version: 4.3.0
@@ -69,6 +72,19 @@ importers:
       vite:
         specifier: ^8.0.13
         version: 8.0.13(jiti@2.7.0)
+    optionalDependencies:
+      '@ikenxuan/watermark-darwin-arm64':
+        specifier: 1.0.11
+        version: 1.0.11
+      '@ikenxuan/watermark-linux-arm64-gnu':
+        specifier: 1.0.11
+        version: 1.0.11
+      '@ikenxuan/watermark-linux-x64-gnu':
+        specifier: 1.0.11
+        version: 1.0.11
+      '@ikenxuan/watermark-win32-x64-msvc':
+        specifier: 1.0.11
+        version: 1.0.11
 
 packages:
 
@@ -135,6 +151,28 @@ packages:
     resolution: {integrity: sha512-5DI5sa7GGe1Uw8PCBhooAIGoqZbcR0ilamPjzgv94qVgolGs9+FqbeNp2bcbyoHJn9+HLKQMYiIa44LwH0VLww==}
     peerDependencies:
       tailwindcss: '>=4.0.0'
+
+  '@ikenxuan/watermark-darwin-arm64@1.0.11':
+    resolution: {integrity: sha512-1ZrcRBd8qajiW+p+24nWZ+BpVt/9J4U9+/6aM6Es96Gb0I5W6pcjmKX8VjbpNa7QAw8OL4N1BgdrFEiNgZJo3g==}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@ikenxuan/watermark-linux-arm64-gnu@1.0.11':
+    resolution: {integrity: sha512-BeepGPHB6KkL66+LkVfb9eESWHCeXlrUqUPmqHuL53qoEXTfqIcXcXdD8r4beyammJFtTYNRxUJ4xPyglG9caw==}
+    cpu: [arm64]
+    os: [linux]
+    libc: [glibc]
+
+  '@ikenxuan/watermark-linux-x64-gnu@1.0.11':
+    resolution: {integrity: sha512-zM2lukDA39MoNP1NPggTNUkd5lFz0c03BPwSopLlvRBxbS40lBW5sXsnQeBwqEFEMvcTid7p1wnraH3ZqxplQA==}
+    cpu: [x64]
+    os: [linux]
+    libc: [glibc]
+
+  '@ikenxuan/watermark-win32-x64-msvc@1.0.11':
+    resolution: {integrity: sha512-2s51s0ROizCaGL/4oyQv4Pjp7128g/gup95xII8/vDHs/TOEfVB4pshYcCaUqTK+Zl+yZbc+3LX0KEE0oV04yQ==}
+    cpu: [x64]
+    os: [win32]
 
   '@inquirer/ansi@2.0.5':
     resolution: {integrity: sha512-doc2sWgJpbFQ64UflSVd17ibMGDuxO1yKgOgLMwavzESnXjFWJqUeG8saYosqKpHp4kWiM5x1nXvEjbpx90gzw==}
@@ -1409,6 +1447,10 @@ packages:
     resolution: {integrity: sha512-QP88BAKvMam/3NxH6vj2o21R6MjxZUAd6nlwAS/pnGvN9IVLocLHxGYIzFhg6fUQ+5th6P4dv4eW9jX3DSIj7A==}
     engines: {node: '>=12'}
 
+  pkg-pr-new@0.0.74:
+    resolution: {integrity: sha512-f2gScB4cjpVcMLeCMEhkrkt3KJCx3TgHTqaWZx54dUgvQcYASh+Hj+txMLjCkSN5ofHEGEmzi1gXK3lWZ2imTA==}
+    hasBin: true
+
   postcss@8.5.14:
     resolution: {integrity: sha512-SoSL4+OSEtR99LHFZQiJLkT59C5B1amGO1NzTwj7TT1qCUgUO6hxOvzkOYxD+vMrXBM3XJIKzokoERdqQq/Zmg==}
     engines: {node: ^10 || ^12 || >=14}
@@ -1678,6 +1720,18 @@ snapshots:
       tw-animate-css: 1.4.0
     transitivePeerDependencies:
       - tailwind-merge
+
+  '@ikenxuan/watermark-darwin-arm64@1.0.11':
+    optional: true
+
+  '@ikenxuan/watermark-linux-arm64-gnu@1.0.11':
+    optional: true
+
+  '@ikenxuan/watermark-linux-x64-gnu@1.0.11':
+    optional: true
+
+  '@ikenxuan/watermark-win32-x64-msvc@1.0.11':
+    optional: true
 
   '@inquirer/ansi@2.0.5': {}
 
@@ -2658,6 +2712,8 @@ snapshots:
   picocolors@1.1.1: {}
 
   picomatch@4.0.4: {}
+
+  pkg-pr-new@0.0.74: {}
 
   postcss@8.5.14:
     dependencies:

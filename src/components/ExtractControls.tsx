@@ -1,5 +1,5 @@
-import { useState, useCallback } from "react";
-import { Button, Spinner } from "@heroui/react";
+import { useState, useCallback, useEffect } from "react";
+import { Button, Spinner, Input } from "@heroui/react";
 import { invoke } from "@tauri-apps/api/core";
 import { Copy, Check } from "lucide-react";
 import type { ResultData } from "../types";
@@ -7,6 +7,7 @@ import type { ResultData } from "../types";
 interface ExtractControlsProps {
   file: File | null;
   result: ResultData | null;
+  wmSize: number;
   onResult: (result: ResultData) => void;
 }
 
@@ -19,24 +20,35 @@ function formatWatermarkText(text: string): string {
   }
 }
 
-export default function ExtractControls({ file, result, onResult }: ExtractControlsProps) {
+export default function ExtractControls({ file, result, wmSize, onResult }: ExtractControlsProps) {
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [inputWmSize, setInputWmSize] = useState(String(wmSize || ""));
+
+  useEffect(() => {
+    setInputWmSize(String(wmSize || ""));
+  }, [wmSize]);
 
   const handleExtract = async () => {
     if (!file) {
       alert("请选择图片");
       return;
     }
+    const size = parseInt(inputWmSize, 10);
+    if (!size || size <= 0) {
+      alert("请输入有效的水印长度 (wm_size)");
+      return;
+    }
     setLoading(true);
     try {
       const arrayBuffer = await file.arrayBuffer();
-      const imageBytes = Array.from(new Uint8Array(arrayBuffer));
+      const imageBytes = new Uint8Array(arrayBuffer);
       const response = await invoke<{
         watermark_text: string;
         duration_ms: number;
       }>("extract_watermark", {
         imageBytes,
+        wmSize: size,
       });
       onResult({
         type: "text",
@@ -61,6 +73,25 @@ export default function ExtractControls({ file, result, onResult }: ExtractContr
 
   return (
     <div className="flex flex-col gap-3">
+      {/* wm_size Input */}
+      {file && (
+        <div className="flex flex-col gap-1">
+          <span className="text-[11px] font-medium" style={{ color: "var(--muted)" }}>
+            水印长度 (wm_size)
+          </span>
+          <Input
+            fullWidth
+            aria-label="水印长度"
+            placeholder="请输入水印比特长度"
+            value={inputWmSize}
+            onChange={(e) => setInputWmSize(e.target.value)}
+            className="text-sm"
+            variant="secondary"
+            type="number"
+          />
+        </div>
+      )}
+
       {/* Action Button */}
       {file && (
         <Button
