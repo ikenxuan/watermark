@@ -59,7 +59,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: native-${{ matrix.platform.target }}
-          path: dist/*.node
+          path: |
+            dist/*.node
+            dist/index.js
+            dist/index.d.ts
 
   publish-preview:
     needs: build-native
