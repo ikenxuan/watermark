@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.6](https://github.com/ikenxuan/watermark/compare/v1.1.5...v1.1.6) (2026-05-30)
+
+
+### 🐛 错误修复
+
+* pkg ([4787967](https://github.com/ikenxuan/watermark/commit/478796704f5a6ce7cc8557cbcfc2bfa6de4ed9a9))
+
 ## [1.1.5](https://github.com/ikenxuan/watermark/compare/v1.1.4...v1.1.5) (2026-05-19)
 
 
