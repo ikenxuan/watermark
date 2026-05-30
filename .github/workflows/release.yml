@@ -149,6 +149,7 @@ jobs:
           npm config set //registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}
           napi create-npm-dirs
           napi artifacts
+          node scripts/clean-publish-package.cjs
           pnpm publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

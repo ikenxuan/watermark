@@ -176,10 +176,8 @@ jobs:
           pnpm create-npm-dirs
           node scripts/sync-npm-dirs.cjs
 
-      - name: Remove frontend dependencies
-        run: |
-          pnpm pkg delete dependencies
-          pnpm pkg delete devDependencies
+      - name: Clean package dependencies for publish
+        run: node scripts/clean-publish-package.cjs
 
       - name: Publish to pkg.pr.new
         id: publish
