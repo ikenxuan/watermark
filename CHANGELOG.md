@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.0](https://github.com/ikenxuan/watermark/compare/v1.2.0...v1.3.0) (2026-06-30)
+
+
+### ✨ 新功能
+
+* update workflows and scripts for improved build and publish process, remove deprecated files ([0f401e5](https://github.com/ikenxuan/watermark/commit/0f401e5a57ec5818a9acbb3788437b5d8b75cb4e))
+
 ## [1.2.0](https://github.com/ikenxuan/watermark/compare/v1.1.6...v1.2.0) (2026-06-30)
 
 
