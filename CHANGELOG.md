@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.2.0](https://github.com/ikenxuan/watermark/compare/v1.1.6...v1.2.0) (2026-06-30)
+
+
+### ✨ 新功能
+
+* add support for Windows ARM64 and macOS x86_64 targets ([afb8ba7](https://github.com/ikenxuan/watermark/commit/afb8ba73df0a9d0c9e17a468d3f4a2cfe9c47f6f))
+* enhance build process by adding caching for Node and Rust dependencies ([50a220b](https://github.com/ikenxuan/watermark/commit/50a220becd0f6d78b7456e1068fed3590d5f255a))
+* update GitHub Actions workflows to use latest action versions and add build-tauri workflow ([4fee1fc](https://github.com/ikenxuan/watermark/commit/4fee1fc9485c0fe4a5d3c9b2191b141d4d53dca5))
+
+
+### 🐛 错误修复
+
+* correct Rust target installation step and update artifact paths ([3ed949f](https://github.com/ikenxuan/watermark/commit/3ed949f3958fa1d00446bed3d03c249d3e4e81a1))
+
 ## [1.1.6](https://github.com/ikenxuan/watermark/compare/v1.1.5...v1.1.6) (2026-05-30)
 
 
