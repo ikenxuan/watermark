@@ -158,6 +158,8 @@ jobs:
         run: |
           curl -X PUT "https://registry-direct.npmmirror.com/-/package/@ikenxuan/watermark/syncs"
           curl -X PUT "https://registry-direct.npmmirror.com/-/package/@ikenxuan/watermark-win32-x64-msvc/syncs"
+          curl -X PUT "https://registry-direct.npmmirror.com/-/package/@ikenxuan/watermark-win32-arm64-msvc/syncs"
+          curl -X PUT "https://registry-direct.npmmirror.com/-/package/@ikenxuan/watermark-darwin-x64/syncs"
           curl -X PUT "https://registry-direct.npmmirror.com/-/package/@ikenxuan/watermark-darwin-arm64/syncs"
           curl -X PUT "https://registry-direct.npmmirror.com/-/package/@ikenxuan/watermark-linux-x64-gnu/syncs"
           curl -X PUT "https://registry-direct.npmmirror.com/-/package/@ikenxuan/watermark-linux-arm64-gnu/syncs"
