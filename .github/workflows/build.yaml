@@ -10,112 +10,343 @@ env:
 
 jobs:
   build_windows:
+    name: Native ${{ matrix.platform.label }}
     runs-on: ${{ matrix.platform.runner }}
     strategy:
+      fail-fast: false
       matrix:
         platform:
           - runner: windows-latest
             target: x86_64-pc-windows-msvc
             label: windows-x86_64
+            platformArchABI: win32-x64-msvc
           - runner: windows-latest
             target: aarch64-pc-windows-msvc
             label: windows-aarch64
+            platformArchABI: win32-arm64-msvc
 
     steps:
       - name: 检出仓库
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: 构建
-        id: build
-        uses: puniyu/napi-build-action@ca05545af23083e05e5ab39fd94541607ddd3a7d # main
+      - name: 安装 pnpm
+        uses: pnpm/action-setup@v6
         with:
-          target: ${{ matrix.platform.target }}
-          cwdDir: ${{ env.APP_PATH }}
-          esm: true
+          version: 10
 
+      - name: 设置 Node 缓存
+        uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: 安装 Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.platform.target }}
+
+      - name: 安装 Rust target
+        run: rustup target add ${{ matrix.platform.target }}
+
+      - name: 缓存 Rust 构建
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: native-${{ matrix.platform.target }}
+          workspaces: |
+            . -> target
+          cache-on-failure: true
+
+      - name: 安装依赖
+        run: pnpm install
+
+      - name: 构建
+        run: pnpm exec napi build --platform --release --esm --output-dir dist --target ${{ matrix.platform.target }}
+
+      - name: 校验构建目标
+        shell: bash
+        run: |
+          expected="dist/${APP_NAME}.${{ matrix.platform.platformArchABI }}.node"
+          if [ ! -f "$expected" ]; then
+            echo "::error file=$expected::Expected native binding was not built"
+            find dist -maxdepth 1 -name "*.node" -print || true
+            exit 1
+          fi
 
       - name: 上传构建产物
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: "${{ env.APP_NAME }}-node-${{ matrix.platform.label }}"
-          path: ${{ steps.build.outputs.output-path }}
+          path: |
+            dist/*.node
+            dist/index.js
+            dist/index.d.ts
 
   build_macos:
+    name: Native ${{ matrix.platform.label }}
     runs-on: ${{ matrix.platform.runner }}
     strategy:
+      fail-fast: false
       matrix:
         platform:
           - runner: macos-latest
             target: x86_64-apple-darwin
             label: macos-x86_64
+            platformArchABI: darwin-x64
           - runner: macos-latest
             target: aarch64-apple-darwin
             label: macos-aarch64
+            platformArchABI: darwin-arm64
 
     steps:
       - name: 检出仓库
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: 构建
-        id: build
-        uses: puniyu/napi-build-action@ca05545af23083e05e5ab39fd94541607ddd3a7d # main
+      - name: 安装 pnpm
+        uses: pnpm/action-setup@v6
         with:
-          target: ${{ matrix.platform.target }}
-          cwdDir: ${{ env.APP_PATH }}
-          esm: true
+          version: 10
 
+      - name: 设置 Node 缓存
+        uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: 安装 Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.platform.target }}
+
+      - name: 安装 Rust target
+        run: rustup target add ${{ matrix.platform.target }}
+
+      - name: 缓存 Rust 构建
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: native-${{ matrix.platform.target }}
+          workspaces: |
+            . -> target
+          cache-on-failure: true
+
+      - name: 安装依赖
+        run: pnpm install
+
+      - name: 构建
+        run: pnpm exec napi build --platform --release --esm --output-dir dist --target ${{ matrix.platform.target }}
+
+      - name: 校验构建目标
+        shell: bash
+        run: |
+          expected="dist/${APP_NAME}.${{ matrix.platform.platformArchABI }}.node"
+          if [ ! -f "$expected" ]; then
+            echo "::error file=$expected::Expected native binding was not built"
+            find dist -maxdepth 1 -name "*.node" -print || true
+            exit 1
+          fi
 
       - name: 上传构建产物
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: "${{ env.APP_NAME }}-node-${{ matrix.platform.label }}"
-          path: ${{ steps.build.outputs.output-path }}
+          path: |
+            dist/*.node
+            dist/index.js
+            dist/index.d.ts
 
   build_linux:
+    name: Native ${{ matrix.platform.label }}
     runs-on: ${{ matrix.platform.runner }}
     container: ${{ matrix.platform.container }}
     strategy:
+      fail-fast: false
       matrix:
         platform:
           - runner: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             label: linux-x86_64
+            platformArchABI: linux-x64-gnu
             container: ghcr.io/puniyu/debian:latest
           - runner: ubuntu-24.04-arm
             target: aarch64-unknown-linux-gnu
             label: linux-aarch64
+            platformArchABI: linux-arm64-gnu
             container: ghcr.io/puniyu/debian:latest
 
     steps:
       - name: 检出仓库
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: 构建
-        id: build
-        uses: puniyu/napi-build-action@ca05545af23083e05e5ab39fd94541607ddd3a7d # main
+      - name: 安装 pnpm
+        uses: pnpm/action-setup@v6
         with:
-          target: ${{ matrix.platform.target }}
-          cwdDir: ${{ env.APP_PATH }}
-          esm: true
+          version: 10
 
+      - name: 设置 Node 缓存
+        uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: 安装 Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.platform.target }}
+
+      - name: 安装 Rust target
+        run: rustup target add ${{ matrix.platform.target }}
+
+      - name: 缓存 Rust 构建
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: native-${{ matrix.platform.target }}
+          workspaces: |
+            . -> target
+          cache-on-failure: true
+
+      - name: 安装依赖
+        run: pnpm install
+
+      - name: 构建
+        run: pnpm exec napi build --platform --release --esm --output-dir dist --target ${{ matrix.platform.target }}
+
+      - name: 校验构建目标
+        shell: bash
+        run: |
+          expected="dist/${APP_NAME}.${{ matrix.platform.platformArchABI }}.node"
+          if [ ! -f "$expected" ]; then
+            echo "::error file=$expected::Expected native binding was not built"
+            find dist -maxdepth 1 -name "*.node" -print || true
+            exit 1
+          fi
 
       - name: 上传构建产物
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: "${{ env.APP_NAME }}-node-${{ matrix.platform.label }}"
-          path: ${{ steps.build.outputs.output-path }}
-
-      - name: 移除开发依赖
-        run: npm pkg delete devDependencies
-
-      - name: 上传npm包
-        if: ${{ matrix.platform.label == 'linux-x86_64' }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: "npm-package"
           path: |
+            dist/*.node
             dist/index.js
             dist/index.d.ts
+
+  prepare_npm_package:
+    name: Prepare npm publish package
+    needs: [build_windows, build_macos, build_linux]
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出仓库
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: 安装 pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 10
+
+      - name: 设置 Node 缓存
+        uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: 安装依赖
+        run: pnpm install
+
+      - name: 下载 native 构建产物
+        uses: actions/download-artifact@v8
+        with:
+          path: artifacts
+          pattern: "${{ env.APP_NAME }}-node-*"
+
+      - name: 复制 JS 入口文件
+        run: |
+          mkdir -p dist
+          cp "artifacts/${APP_NAME}-node-linux-x86_64/index.js" dist/
+          cp "artifacts/${APP_NAME}-node-linux-x86_64/index.d.ts" dist/
+
+      - name: 整理 npm 发布包
+        shell: bash
+        run: |
+          pnpm create-npm-dirs
+          find artifacts -type f -name "*.node" -print
+          pnpm artifacts
+
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs'
+          import path from 'node:path'
+
+          const rootPath = path.resolve('package.json')
+          const rootPkg = JSON.parse(fs.readFileSync(rootPath, 'utf8'))
+          const binaryName = rootPkg.napi?.binaryName || 'index'
+          const abiByTarget = {
+            'x86_64-pc-windows-msvc': 'win32-x64-msvc',
+            'aarch64-pc-windows-msvc': 'win32-arm64-msvc',
+            'x86_64-apple-darwin': 'darwin-x64',
+            'aarch64-apple-darwin': 'darwin-arm64',
+            'x86_64-unknown-linux-gnu': 'linux-x64-gnu',
+            'aarch64-unknown-linux-gnu': 'linux-arm64-gnu',
+          }
+
+          const optionalDependencies = {}
+          const missing = []
+
+          for (const target of rootPkg.napi?.targets || []) {
+            const abi = abiByTarget[target]
+            if (!abi) {
+              missing.push(`unknown napi target: ${target}`)
+              continue
+            }
+
+            const dir = path.resolve('npm', abi)
+            const pkgPath = path.join(dir, 'package.json')
+            const nodePath = path.join(dir, `${binaryName}.${abi}.node`)
+            const licensePath = path.join(dir, 'LICENSE')
+
+            if (!fs.existsSync(pkgPath)) {
+              missing.push(path.relative(process.cwd(), pkgPath))
+              continue
+            }
+
+            if (!fs.existsSync(nodePath)) {
+              missing.push(path.relative(process.cwd(), nodePath))
+            }
+
+            const nativePkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'))
+            nativePkg.version = rootPkg.version
+            fs.copyFileSync(path.resolve('LICENSE'), licensePath)
+            nativePkg.files = Array.from(
+              new Set([...(Array.isArray(nativePkg.files) ? nativePkg.files : []), `${binaryName}.${abi}.node`, 'LICENSE']),
+            )
+            fs.writeFileSync(pkgPath, JSON.stringify(nativePkg, null, 2) + '\n')
+            optionalDependencies[nativePkg.name] = rootPkg.version
+          }
+
+          if (missing.length > 0) {
+            console.error('Missing prepared npm package files:')
+            for (const item of missing) console.error(`- ${item}`)
+            process.exit(1)
+          }
+
+          rootPkg.optionalDependencies = Object.fromEntries(
+            Object.entries(optionalDependencies).sort(([a], [b]) => a.localeCompare(b)),
+          )
+          delete rootPkg.dependencies
+          delete rootPkg.devDependencies
+          if (rootPkg.scripts) delete rootPkg.scripts.prepublishOnly
+
+          fs.writeFileSync(rootPath, JSON.stringify(rootPkg, null, 2) + '\n')
+          console.log(`Prepared ${Object.keys(rootPkg.optionalDependencies).length} native npm packages`)
+          NODE
+
+      - name: 上传 npm 发布包
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: npm-publish-package
+          path: |
+            dist/**
+            npm/**
             package.json
             README.md
             LICENSE

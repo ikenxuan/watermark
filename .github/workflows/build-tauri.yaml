@@ -55,6 +55,23 @@ jobs:
           cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
 
+      - name: Validate Tauri version source
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs'
+
+          const rootVersion = JSON.parse(fs.readFileSync('package.json', 'utf8')).version
+          const tauriVersion = JSON.parse(fs.readFileSync('src-tauri/tauri.conf.json', 'utf8')).version
+
+          if (tauriVersion !== '../package.json' && tauriVersion !== rootVersion) {
+            console.error(`Tauri version must point to ../package.json or equal ${rootVersion}, got ${tauriVersion}`)
+            process.exit(1)
+          }
+
+          console.log(`Tauri app version source: ${tauriVersion}`)
+          NODE
+
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:

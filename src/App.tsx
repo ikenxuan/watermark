@@ -8,6 +8,7 @@ import ExtractControls from "./components/ExtractControls";
 import CanvasViewer from "./components/CanvasViewer";
 import { getImageFileInfo, type ImageFileInfo } from "./utils/fileInfo";
 import type { ResultData } from "./types";
+import pkg from "../package.json";
 
 export default function App() {
   const [activeTab, setActiveTab] = useState("embed");
@@ -152,7 +153,7 @@ export default function App() {
           className="font-mono-nums text-[10px]"
           style={{ color: "var(--muted-secondary)" }}
         >
-          v1.0.11
+          v{pkg.version}
         </span>
       </header>
 

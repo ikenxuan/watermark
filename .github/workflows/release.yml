@@ -65,17 +65,11 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - name: Download JS bindings
+      - name: Download prepared npm package
         uses: actions/download-artifact@v8
         with:
-          name: npm-package
-          path: .
-
-      - name: Download Node bindings
-        uses: actions/download-artifact@v8
-        with:
-          path: artifacts
-          pattern: watermark*
+          name: npm-publish-package
+          path: publish
 
       - name: Setup Nodejs
         uses: actions/setup-node@v6
@@ -87,16 +81,22 @@ jobs:
         with:
           version: 10
 
-      - name: Setup NPM Dirs
+      - name: Publish npm packages
+        shell: bash
         run: |
-          pnpm i -g @napi-rs/cli
+          cd publish
           pnpm config set provenance true
           pnpm config set registry https://registry.npmjs.org/
           npm config set //registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}
-          napi create-npm-dirs
-          napi artifacts
-          node scripts/clean-publish-package.cjs
-          pnpm publish --access public --no-git-checks
+
+          for package in npm/*; do
+            if [ -d "$package" ]; then
+              echo "Publishing $package"
+              (cd "$package" && pnpm publish --access public --no-git-checks --ignore-scripts)
+            fi
+          done
+
+          pnpm publish --access public --no-git-checks --ignore-scripts
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
