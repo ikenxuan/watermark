@@ -100,14 +100,35 @@ jobs:
       - name: Build Tauri
         run: pnpm tauri build --target ${{ matrix.target }}
 
+      - name: Validate Windows NSIS installer
+        if: matrix.os == 'windows'
+        shell: pwsh
+        run: |
+          $bundleDir = "target/${{ matrix.target }}/release/bundle"
+          $installers = @(Get-ChildItem -Path $bundleDir -Recurse -File -Filter '*-setup.exe')
+          $msiFiles = @(Get-ChildItem -Path $bundleDir -Recurse -File -Filter '*.msi')
+
+          if ($installers.Count -ne 1) {
+            Write-Error "Expected exactly one NSIS setup.exe, found $($installers.Count)."
+            Get-ChildItem -Path $bundleDir -Recurse -File | Select-Object -ExpandProperty FullName
+            exit 1
+          }
+
+          if ($msiFiles.Count -ne 0) {
+            Write-Error "MSI output is disabled, but MSI files were generated."
+            $msiFiles | Select-Object -ExpandProperty FullName
+            exit 1
+          }
+
+          Write-Output "Windows installer: $($installers[0].FullName)"
+
       - name: Upload Tauri artifact
         uses: actions/upload-artifact@v7
         with:
           name: tauri-${{ matrix.label }}
           if-no-files-found: error
           path: |
-            target/${{ matrix.target }}/release/bundle/**/*.msi
-            target/${{ matrix.target }}/release/bundle/**/*.exe
+            target/${{ matrix.target }}/release/bundle/nsis/*-setup.exe
             target/${{ matrix.target }}/release/bundle/**/*.dmg
             target/${{ matrix.target }}/release/bundle/**/*.AppImage
             target/${{ matrix.target }}/release/bundle/**/*.deb

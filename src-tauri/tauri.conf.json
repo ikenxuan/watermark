@@ -30,6 +30,13 @@
   "bundle": {
     "active": true,
     "targets": "all",
+    "publisher": "ikenxuan",
+    "homepage": "https://github.com/ikenxuan/watermark",
+    "copyright": "Copyright © 2026 ikenxuan",
+    "license": "MIT",
+    "category": "Utility",
+    "shortDescription": "图片数字盲水印工具",
+    "longDescription": "用于向图片嵌入和提取数字盲水印的桌面工具。",
     "icon": ["icons/icon.png", "icons/icon.ico"]
   }
 }

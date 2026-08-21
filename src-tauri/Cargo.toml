@@ -2,6 +2,11 @@
 name = "watermark-tool"
 version = "1.3.0"
 edition = "2024"
+authors = ["ikenxuan"]
+description = "用于向图片嵌入和提取数字盲水印的桌面工具"
+license = "MIT"
+repository = "https://github.com/ikenxuan/watermark"
+homepage = "https://github.com/ikenxuan/watermark"
 
 [lib]
 name = "dwt_watermark_app_lib"
