@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.3.1](https://github.com/ikenxuan/watermark/compare/v1.3.0...v1.3.1) (2026-08-21)
+
+
+### 🐛 错误修复
+
+* 改进奇异值分解（SVD）处理和更新块提取，以返回选项 ([0952eb1](https://github.com/ikenxuan/watermark/commit/0952eb1917482799f754cfb1db5a1e841f0d46d9))
+* 细优 ([ba04cf4](https://github.com/ikenxuan/watermark/commit/ba04cf45b0357c54945905dcc294b259fd1e7095))
+
 ## [1.3.0](https://github.com/ikenxuan/watermark/compare/v1.2.0...v1.3.0) (2026-06-30)
 
 
