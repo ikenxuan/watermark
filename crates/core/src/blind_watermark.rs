@@ -174,7 +174,9 @@ fn svd_4x4(block: &[[f32; 4]; 4]) -> Option<([[f32; 4]; 4], [f32; 4], [[f32; 4];
         block[3][0], block[3][1], block[3][2], block[3][3],
     ]);
 
-    let svd = SVD::new(mat, true, true);
+    // SVD::new has no iteration limit. Degenerate image blocks can make it
+    // wait forever, which freezes both the N-API and Tauri frontends.
+    let svd = SVD::try_new(mat, true, true, f32::EPSILON * 5.0, 16)?;
     let u = svd.u?;
     let s = svd.singular_values;
     let v_t = svd.v_t?;
@@ -215,6 +217,22 @@ fn svd_reconstruct(u: &[[f32; 4]; 4], s: &[f32], vh: &[[f32; 4]; 4]) -> [[f32; 4
     }
 
     out
+}
+
+fn svd_values_4x4(block: &[[f32; 4]; 4]) -> Option<[f32; 4]> {
+    let mat = SMatrix::<f32, 4, 4>::from_row_slice(&[
+        block[0][0], block[0][1], block[0][2], block[0][3],
+        block[1][0], block[1][1], block[1][2], block[1][3],
+        block[2][0], block[2][1], block[2][2], block[2][3],
+        block[3][0], block[3][1], block[3][2], block[3][3],
+    ]);
+
+    // Extraction only needs singular values, so skip U/V and use a bounded
+    // iteration budget. Repetition across blocks/channels tolerates isolated
+    // blocks that still fail to converge.
+    let svd = SVD::try_new(mat, false, false, f32::EPSILON * 5.0, 16)?;
+    let s = svd.singular_values;
+    Some([s[0], s[1], s[2], s[3]])
 }
 
 // ============================================================
@@ -419,7 +437,7 @@ fn embed_block(
     idct2_4x4(&unshuffled_block)
 }
 
-fn extract_block(block: &[[f32; 4]; 4], shuffler: &[usize], d1: f32, d2: f32) -> f32 {
+fn extract_block(block: &[[f32; 4]; 4], shuffler: &[usize], d1: f32, d2: f32) -> Option<f32> {
     let block_dct = dct2_4x4(block);
 
     let mut flattened = [0.0f32; 16];
@@ -439,8 +457,8 @@ fn extract_block(block: &[[f32; 4]; 4], shuffler: &[usize], d1: f32, d2: f32) ->
         }
     }
 
-    let Some((_, s, _)) = svd_4x4(&shuffled_block) else {
-        return 0.0;
+    let Some(s) = svd_values_4x4(&shuffled_block) else {
+        return None;
     };
 
     let mut wm = quantize_extract(s[0], d1);
@@ -449,7 +467,7 @@ fn extract_block(block: &[[f32; 4]; 4], shuffler: &[usize], d1: f32, d2: f32) ->
         wm = (wm * 3.0 + tmp * 1.0) / 4.0;
     }
 
-    wm
+    Some(wm)
 }
 
 // ============================================================
@@ -611,7 +629,7 @@ pub fn blind_extract(
     password_img: u64,
     password_wm: u64,
 ) -> Option<String> {
-    if width < 8 || height < 8 || wm_size == 0 {
+    if width < 8 || height < 8 || wm_size == 0 || wm_size % 8 != 0 {
         return None;
     }
 
@@ -658,14 +676,14 @@ pub fn blind_extract(
     let block_w = ca_w / BLOCK_SIZE;
     let block_num = block_h * block_w;
 
-    if block_num == 0 {
+    if block_num == 0 || wm_size > block_num {
         return None;
     }
 
     let idx_shuffle = random_strategy1(password_img, block_num, BLOCK_SIZE * BLOCK_SIZE);
 
     // 提取每个块的 1 bit (3 通道)
-    let mut wm_block_bit = vec![vec![0.0f32; block_num]; 3];
+    let mut wm_block_bit = vec![vec![None; block_num]; 3];
 
     for ch in 0..3 {
         let mut channel = vec![0.0f32; padded_pixels];
@@ -676,7 +694,7 @@ pub fn blind_extract(
         let (ca, _, _, _) = haar_dwt2(&channel, padded_w, padded_h);
 
         // 并行提取所有块
-        let ch_results: Vec<f32> = (0..block_num)
+        let ch_results: Vec<Option<f32>> = (0..block_num)
             .into_par_iter()
             .map(|block_idx| {
                 let by = block_idx / block_w;
@@ -707,8 +725,10 @@ pub fn blind_extract(
         let mut count = 0usize;
         for ch in 0..3 {
             for j in (i..block_num).step_by(wm_size) {
-                sum += wm_block_bit[ch][j];
-                count += 1;
+                if let Some(val) = wm_block_bit[ch][j] {
+                    sum += val;
+                    count += 1;
+                }
             }
         }
         if count > 0 {
